@@ -20,12 +20,14 @@ var (
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidToken       = errors.New("invalid token")
+	ErrInvalidPassword    = errors.New("current password is incorrect")
 )
 
 type AuthService interface {
 	Register(ctx context.Context, input models.RegisterInput) (*models.AuthResponse, error)
 	Login(ctx context.Context, input models.LoginInput) (*models.AuthResponse, error)
 	RefreshToken(ctx context.Context, token string) (*models.TokenResponse, error)
+	ChangePassword(ctx context.Context, userID int, input models.ChangePasswordInput) error
 }
 
 type authService struct {
@@ -146,6 +148,34 @@ func (s *authService) RefreshToken(ctx context.Context, rawToken string) (*model
 		AccessToken:  accessToken,
 		RefreshToken: newRawRefreshToken,
 	}, nil
+}
+
+func (s *authService) ChangePassword(ctx context.Context, userID int, input models.ChangePasswordInput) error {
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return ErrInvalidToken
+	}
+
+	// Verify the current password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.OldPassword))
+	if err != nil {
+		return ErrInvalidPassword
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	if err := s.userRepo.UpdatePassword(ctx, userID, string(hashedPassword)); err != nil {
+		return err
+	}
+
+	// Invalidate all existing refresh tokens so the change sticks everywhere
+	return s.refreshTokenRepo.RevokeAllForUser(ctx, userID)
 }
 
 func (s *authService) generateTokens(ctx context.Context, user *models.User) (string, string, error) {

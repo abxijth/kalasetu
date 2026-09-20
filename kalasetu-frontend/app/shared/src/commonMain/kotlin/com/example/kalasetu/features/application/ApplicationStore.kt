@@ -24,4 +24,8 @@ object ApplicationStore {
             if (it.id == id) it.copy(status = status) else it
         }
     }
+
+    fun clear() {
+        _applications.value = emptyList()
+    }
 }

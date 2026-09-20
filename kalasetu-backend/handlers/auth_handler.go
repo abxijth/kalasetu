@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"kalasetu/middlewares"
 	"kalasetu/models"
 	"kalasetu/services"
 	"net/http"
@@ -101,4 +102,30 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	setRefreshTokenCookie(c, res.RefreshToken, 60*60*24*7)
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	userID := c.GetInt(middlewares.UserIDGinKey)
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var input models.ChangePasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.authService.ChangePassword(c.Request.Context(), userID, input)
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidPassword) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password changed successfully"})
 }

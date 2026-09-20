@@ -30,6 +30,7 @@ sealed class Screen {
 
     data object Feed : Screen()
     data object Store : Screen()
+    data object Settings : Screen()
 
     data object UploadPost : Screen()
     data class PostPreview(

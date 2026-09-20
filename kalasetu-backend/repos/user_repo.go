@@ -14,6 +14,7 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	FindByID(ctx context.Context, id int) (*models.User, error)
 	StartOnboarding(ctx context.Context, userID int, onboardingUser models.OnboardingUser) error
+	UpdatePassword(ctx context.Context, userID int, hashedPassword string) error
 }
 
 type userRepository struct {
@@ -85,6 +86,16 @@ func (r *userRepository) FindByID(ctx context.Context, id int) (*models.User, er
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) UpdatePassword(ctx context.Context, userID int, hashedPassword string) error {
+	query := `
+		UPDATE users
+		SET password = $1, updated_at = $2
+		WHERE id = $3
+	`
+	_, err := r.db.ExecContext(ctx, query, hashedPassword, time.Now(), userID)
+	return err
 }
 
 func (r *userRepository) StartOnboarding(ctx context.Context, userID int, onboardingUser models.OnboardingUser) error {

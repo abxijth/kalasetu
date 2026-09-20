@@ -49,11 +49,11 @@ fun ArtistHomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         if (events.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -86,8 +86,8 @@ fun EventCard(event: Event, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(2.dp),
     ) {
         Column {
@@ -108,7 +108,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFF4F1FF)),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -127,7 +127,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                     event.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E1E1E),
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -138,7 +138,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text(event.location, fontSize = 13.sp, color = Color(0xFF757575))
+                    Text(event.location, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -152,14 +152,14 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                     Text(
                         formatEventDuration(event.startDate, event.endDate),
                         fontSize = 13.sp,
-                        color = Color(0xFF757575),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "By ${event.organizerName}",
                     fontSize = 12.sp,
-                    color = Color(0xFF757575),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

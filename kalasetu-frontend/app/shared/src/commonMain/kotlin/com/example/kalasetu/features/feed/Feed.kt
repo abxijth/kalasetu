@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import coil3.compose.AsyncImage
 import com.example.kalasetu.features.profile.toInitials
+import com.example.kalasetu.features.settings.SavedStore
 import com.example.kalasetu.theme.KalasetuTheme
 import com.example.kalasetu.theme.SelectedPurple
 import com.example.kalasetu.theme.SubtitleGray
@@ -103,6 +104,8 @@ fun FeedScreen(
     val posts by viewModel.posts.collectAsState()
     val commentsList by viewModel.comments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val savedPosts by SavedStore.saved.collectAsState()
+    val savedIds = remember(savedPosts) { savedPosts.map { it.id }.toSet() }
 
     LaunchedEffect(Unit) {
         viewModel.loadPosts()
@@ -150,6 +153,8 @@ fun FeedScreen(
             when (selectedTab) {
                 0 -> FeedContent(
                     posts = posts,
+                    savedIds = savedIds,
+                    onSaveToggle = { post -> SavedStore.toggle(post) },
                     onLikeClick = { postId -> viewModel.toggleLike(postId) },
                     onDeleteClick = { postId -> viewModel.deletePost(postId) },
                     onCommentClick = { postId ->
@@ -186,6 +191,8 @@ fun FeedScreen(
 @Composable
 internal fun FeedContent(
     posts: List<ArtistPost>,
+    savedIds: Set<Int>,
+    onSaveToggle: (ArtistPost) -> Unit,
     onLikeClick: (Int) -> Unit,
     onDeleteClick: (Int) -> Unit,
     onCommentClick: (Int) -> Unit
@@ -197,6 +204,8 @@ internal fun FeedContent(
         items(posts, key = { it.id }) { post ->
             PostCard(
                 post = post,
+                saved = post.id in savedIds,
+                onSaveClick = { onSaveToggle(post) },
                 onLikeClick = { onLikeClick(post.id) },
                 onDeleteClick = { onDeleteClick(post.id) },
                 onCommentClick = { onCommentClick(post.id) }
@@ -310,13 +319,14 @@ internal fun KalaTabRow(
 }
 
 @Composable
-private fun PostCard(
+internal fun PostCard(
     post: ArtistPost,
+    saved: Boolean,
+    onSaveClick: () -> Unit,
     onLikeClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onCommentClick: () -> Unit
 ) {
-    var saved by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
 
     Card(
@@ -389,7 +399,7 @@ private fun PostCard(
                     Icon(
                         imageVector = if (post.isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like",
-                        tint = if (post.isLiked) Color.Red else Color.Black
+                        tint = if (post.isLiked) Color.Red else MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Text(text = "${post.likes}", fontSize = 13.sp)
@@ -407,10 +417,11 @@ private fun PostCard(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                IconButton(onClick = { saved = !saved }) {
+                IconButton(onClick = onSaveClick) {
                     Icon(
                         imageVector = if (saved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Save"
+                        contentDescription = "Save",
+                        tint = if (saved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

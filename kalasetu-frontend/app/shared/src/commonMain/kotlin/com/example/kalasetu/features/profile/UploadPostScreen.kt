@@ -66,7 +66,7 @@ fun UploadPostScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SurfaceWhite
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
@@ -81,13 +81,13 @@ fun UploadPostScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandPurple,
-                    disabledContainerColor = DividerGray
+                    disabledContainerColor = MaterialTheme.colorScheme.outlineVariant
                 )
             ) {
                 Text("Done", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         },
-        containerColor = SurfaceWhite
+        containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         Column(
             modifier = Modifier
@@ -103,7 +103,7 @@ fun UploadPostScreen(
                     "Photos",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 if (images.isEmpty()) {
@@ -112,7 +112,7 @@ fun UploadPostScreen(
                             .fillMaxWidth()
                             .height(200.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Purple50)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
                             .dashedBorder(color = BrandPurple, strokeWidth = 1.5.dp, cornerRadius = 12.dp)
                             .clickable { imagePicker.launch() },
                         contentAlignment = Alignment.Center
@@ -166,7 +166,7 @@ fun UploadPostScreen(
                             modifier = Modifier
                                 .size(100.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Purple50)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
                                 .clickable { imagePicker.launch() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -182,21 +182,21 @@ fun UploadPostScreen(
                     "Description",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    placeholder = { Text("Write something about your post...", color = TextSecondary) },
+                    placeholder = { Text("Write something about your post...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = BrandPurple,
-                        unfocusedBorderColor = DividerGray,
-                        unfocusedContainerColor = CardWhite,
-                        focusedContainerColor = CardWhite
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             }
@@ -230,11 +230,11 @@ fun PostPreviewScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SurfaceWhite
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = SurfaceWhite
+        containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         Column(
             modifier = Modifier
@@ -269,7 +269,7 @@ private fun PostPreviewCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = BorderStroke(1.dp, DividerGray.copy(alpha = 0.4f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column {
             Row(
@@ -283,7 +283,7 @@ private fun PostPreviewCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Purple100),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     if (avatarModel != null) {
@@ -313,7 +313,7 @@ private fun PostPreviewCard(
                     Text(
                         text = "Artist • India • Just now",
                         fontSize = 12.sp,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = { }) {
@@ -333,7 +333,7 @@ private fun PostPreviewCard(
                     Icon(
                         imageVector = Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Text(text = "0", fontSize = 13.sp)
@@ -374,7 +374,7 @@ private fun PostPreviewCard(
                     Text(
                         text = "see more",
                         fontSize = 12.sp,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.clickable { expanded = true }
                     )
                 }

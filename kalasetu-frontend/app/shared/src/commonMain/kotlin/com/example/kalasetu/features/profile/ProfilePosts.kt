@@ -22,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -104,7 +105,7 @@ fun PostCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 1.dp
@@ -138,13 +139,13 @@ fun PostCard(
                         text = profile.name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
                         text = post.timeAgo,
                         fontSize = 12.sp,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -152,7 +153,7 @@ fun PostCard(
             Text(
                 text = post.content,
                 fontSize = 14.sp,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = 14.dp)
@@ -194,7 +195,7 @@ fun PostCard(
                 Text(
                     text = "${post.likes} likes",
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text("•")
@@ -202,14 +203,14 @@ fun PostCard(
                 Text(
                     text = "${post.comments} comments",
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Spacer(Modifier.height(8.dp))
 
             HorizontalDivider(
-                color = DividerGray,
+                color = MaterialTheme.colorScheme.outlineVariant,
                 thickness = 1.dp
             )
 
@@ -312,14 +313,14 @@ fun PostActionButton(
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = TextSecondary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
         )
 
         Text(
             text = label,
             fontSize = 13.sp,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
     }

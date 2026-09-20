@@ -23,7 +23,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Menu
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizerHomeScreen(
@@ -58,7 +57,7 @@ fun OrganizerHomeScreen(
                 },
 
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
@@ -77,7 +76,7 @@ fun OrganizerHomeScreen(
                 )
             }
         },
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
     ) { padding ->
         if (events.isEmpty()) {
             // ─── Empty State ───
@@ -130,8 +129,8 @@ private fun OrganizerEventCard(event: Event, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(2.dp),
     ) {
         Column {
@@ -152,7 +151,7 @@ private fun OrganizerEventCard(event: Event, onClick: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFF4F1FF)),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
