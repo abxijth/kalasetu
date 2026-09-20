@@ -107,7 +107,7 @@ fun AboutScreen(onBack: () -> Unit) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             AboutInfoRow(
                 label = "Repository",
-                value = "github.com/abxijth/kalasetu"
+                value = "github.com/amfoss/kalasetu"
             )
         }
     }
