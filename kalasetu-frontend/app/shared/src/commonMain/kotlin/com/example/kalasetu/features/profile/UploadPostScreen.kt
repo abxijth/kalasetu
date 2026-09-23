@@ -3,28 +3,58 @@ package com.example.kalasetu.features.profile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -262,12 +292,14 @@ private fun PostPreviewCard(
     description: String,
     imageBytes: List<ByteArray>
 ) {
+    var fullScreenImageIndex by remember { mutableStateOf<Int?>(null) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, DividerGray.copy(alpha = 0.4f))
     ) {
@@ -278,37 +310,18 @@ private fun PostPreviewCard(
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val avatarModel = userAvatarBytes ?: userAvatarUrl
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Purple100),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (avatarModel != null) {
-                        AsyncImage(
-                            model = avatarModel,
-                            contentDescription = userName,
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        val initials = userName.split(" ").filter { it.isNotEmpty() }.take(2).map { it[0] }.joinToString("").uppercase()
-                        Text(
-                            text = initials,
-                            color = BrandPurple,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
+                ProfileAvatar(
+                    initials = userName.toInitials(),
+                    imageUrl = userAvatarUrl,
+                    avatarBytes = userAvatarBytes
+                )
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = userName.ifBlank { " " },
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        color = TextPrimary
                     )
                     Text(
                         text = "Artist • India • Just now",
@@ -317,11 +330,24 @@ private fun PostPreviewCard(
                     )
                 }
                 IconButton(onClick = { }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options", tint = TextSecondary)
                 }
             }
 
-            ImageCarouselBytes(imageBytes = imageBytes)
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = TextPrimary,
+                modifier = Modifier.padding(horizontal = 14.dp)
+            )
+
+            if (imageBytes.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                PostImageCarousel(
+                    images = imageBytes,
+                    onImageClick = { index -> fullScreenImageIndex = index }
+                )
+            }
 
             Row(
                 modifier = Modifier
@@ -333,101 +359,38 @@ private fun PostPreviewCard(
                     Icon(
                         imageVector = Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like",
-                        tint = Color.Black
+                        tint = TextSecondary
                     )
                 }
-                Text(text = "0", fontSize = 13.sp)
+                Text(text = "0", fontSize = 13.sp, color = TextSecondary)
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 IconButton(onClick = { }) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = "Comments")
+                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = "Comments", tint = TextSecondary)
                 }
-                Text(text = "0", fontSize = 13.sp)
+                Text(text = "0", fontSize = 13.sp, color = TextSecondary)
 
                 Spacer(modifier = Modifier.weight(1f))
 
                 IconButton(onClick = { }) {
                     Icon(
                         imageVector = Icons.Outlined.BookmarkBorder,
-                        contentDescription = "Save"
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-            ) {
-                var expanded by remember { mutableStateOf(false) }
-                val displayName = userName.ifBlank { "Kala Artist" }
-                Text(
-                    buildString {
-                        append(displayName)
-                        append(" · ")
-                        append(description)
-                    },
-                    fontSize = 13.sp,
-                    maxLines = if (expanded) Int.MAX_VALUE else 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (!expanded && description.length > 50) {
-                    Text(
-                        text = "see more",
-                        fontSize = 12.sp,
-                        color = TextSecondary,
-                        modifier = Modifier.clickable { expanded = true }
-                    )
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun ImageCarouselBytes(imageBytes: List<ByteArray>) {
-    val pagerState = rememberPagerState(
-        pageCount = { imageBytes.size }
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            AsyncImage(
-                model = imageBytes[page],
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        if (imageBytes.size > 1) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                repeat(imageBytes.size) { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (index == pagerState.currentPage)
-                                    BrandPurple
-                                else
-                                    Color.Gray.copy(alpha = 0.6f)
-                            )
+                        contentDescription = "Save",
+                        tint = TextSecondary
                     )
                 }
             }
         }
     }
+
+    if (fullScreenImageIndex != null) {
+        FullScreenImageViewer(
+            images = imageBytes,
+            initialPage = fullScreenImageIndex!!,
+            onDismiss = { fullScreenImageIndex = null }
+        )
+    }
 }
+
+
