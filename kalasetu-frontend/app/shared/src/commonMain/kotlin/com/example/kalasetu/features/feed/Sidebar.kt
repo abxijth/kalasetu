@@ -112,6 +112,9 @@ fun SidebarContent(
                 onClick = { onNavigate("Dashboard") }
             )
 
+            SectionLabel("Marketplace")
+            SidebarItem(icon = Icons.Filled.Storefront, label = "Marketplace", isSelected = currentRoute == "Store",onClick = { onNavigate("Store") })
+
             SectionLabel("Manage")
             SidebarItem(icon = Icons.Outlined.AssignmentInd, label = "Applications", isSelected = currentRoute == "Applications",onClick = { onNavigate("Applications") })
             SidebarItem(icon = Icons.Outlined.ConfirmationNumber, label = "My Events",isSelected = currentRoute == "MyEvents", onClick = { onNavigate("MyEvents") })

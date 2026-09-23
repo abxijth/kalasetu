@@ -19,7 +19,6 @@ import com.example.kalasetu.features.opportunity.EditOpportunityScreen
 import com.example.kalasetu.features.marketplace.*
 import com.example.kalasetu.features.onboarding.*
 import com.example.kalasetu.features.profile.*
-import com.example.kalasetu.features.profile.BrandPurple
 import com.example.kalasetu.navigation.BackHandler
 import com.example.kalasetu.navigation.Screen
 import com.example.kalasetu.theme.KalasetuTheme
@@ -51,6 +50,7 @@ fun App() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val feedViewModel: FeedViewModel = viewModel()
+    val marketplaceViewModel: MarketplaceViewModel = viewModel()
 
     val isAuthScreen = screen is Screen.OnboardingWelcome ||
                       screen is Screen.AuthSignup ||
@@ -70,6 +70,8 @@ fun App() {
                     currentRoute = when (screen) {
                         Screen.Feed -> "Dashboard"
                         Screen.Store -> "Store"
+                        Screen.Marketplace -> "Store"
+                        is Screen.ProductOverview -> "Store"
                         is Screen.Profile -> "Profile"
                         is Screen.ArtistHome -> "Events"
                         is Screen.MyApplications -> "Applications"
@@ -106,45 +108,35 @@ fun App() {
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
 
-                Screen.Store -> {
+                // ─── Marketplace (Store tab & Audience) ───
+                Screen.Store, Screen.Marketplace -> {
                     BackHandler { screen = Screen.Feed }
-                    Scaffold(
-                        topBar = {
-                            KalaTopBar(
-                                avatarUrl = currentProfile?.avatarUrl,
-                                avatarBytes = currentProfile?.avatarBytes,
-                                userName = currentProfile?.name ?: userName,
-                                onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
-                                onMenuClick = { scope.launch { drawerState.open() } }
-                            )
-                        },
-                        bottomBar = {
-                            KalaBottomNav(
-                                selectedIndex = 2,
-                                onStoreClick = { screen = Screen.Store },
-                                onEventsClick = { screen = Screen.Events },
-                                onHomeClick = { screen = Screen.Feed },
-                                onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) }
-                            )
-                        }
-                    ) { innerPadding ->
-                        Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                            Text("Welcome to MarketPlace. The features will soon be added.!")
-                        }
-                    }
+                    MarketplaceScreen(
+                        viewModel = marketplaceViewModel,
+                        avatarUrl = currentProfile?.avatarUrl,
+                        avatarBytes = currentProfile?.avatarBytes,
+                        userName = currentProfile?.name ?: userName,
+                        onProductClick = { productId -> screen = Screen.ProductOverview(productId) },
+                        onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
+                        onMenuClick = { scope.launch { drawerState.open() } },
+                        onHomeClick = { screen = Screen.Feed },
+                        onEventsClick = { screen = Screen.Events },
+                        onStoreClick = { screen = Screen.Store },
+                    )
                 }
 
-                // ─── Marketplace (Audience) ───
-                Screen.Marketplace -> MarketplaceScreen(
-                    onProductClick = { productId -> screen = Screen.ProductOverview(productId) },
-                    onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
-                )
-
-                is Screen.ProductOverview -> ProductOverviewScreen(
-                    productId = currentScreen.productId,
-                    onBack = { screen = Screen.Marketplace },
-                    onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
-                )
+                is Screen.ProductOverview -> {
+                    BackHandler { screen = Screen.Marketplace }
+                    ProductOverviewScreen(
+                        productId = currentScreen.productId,
+                        viewModel = marketplaceViewModel,
+                        avatarUrl = currentProfile?.avatarUrl,
+                        avatarBytes = currentProfile?.avatarBytes,
+                        userName = currentProfile?.name ?: userName,
+                        onBack = { screen = Screen.Marketplace },
+                        onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
+                    )
+                }
 
                 Screen.OnboardingWelcome -> OnboardingWelcomeScreen {
                     screen = Screen.AuthSignup

@@ -40,25 +40,29 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kalasetu.features.feed.KalaTopBar
+import com.example.kalasetu.navigation.BackHandler
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductOverviewScreen(
     productId: String,
+    viewModel: MarketplaceViewModel,
+    avatarUrl: String?,
+    avatarBytes: ByteArray?,
+    userName: String?,
     onBack: () -> Unit,
     onProfileClick: () -> Unit,
 ) {
-    val products by MarketplaceStore.products.collectAsState()
-    val favouriteIds by MarketplaceStore.favouriteIds.collectAsState()
+    val products by viewModel.products.collectAsState()
+    val favouriteIds by viewModel.favouriteIds.collectAsState()
     val product = products.firstOrNull { it.id == productId }
 
     var userRating by remember { mutableIntStateOf(0) }
@@ -67,7 +71,15 @@ fun ProductOverviewScreen(
 
     Scaffold(
         topBar = {
-            MarketplaceHeader(onProfileClick = onProfileClick)
+            KalaTopBar(
+                avatarUrl = avatarUrl,
+                avatarBytes = avatarBytes,
+                userName = userName,
+                title = product?.name ?: "Product",
+                onBack = onBack,
+                onProfileClick = onProfileClick,
+                onMenuClick = onBack,
+            )
         },
         containerColor = CardWhite,
     ) { padding ->
@@ -95,9 +107,10 @@ fun ProductOverviewScreen(
                     .fillMaxWidth()
                     .aspectRatio(1f),
             ) {
-                if (product.imageBytes != null) {
+                val imageModel = product.imageUrl ?: product.imageBytes
+                if (imageModel != null) {
                     coil3.compose.AsyncImage(
-                        model = product.imageBytes,
+                        model = imageModel,
                         contentDescription = product.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
@@ -113,7 +126,7 @@ fun ProductOverviewScreen(
                             text = product.name.take(2).uppercase(),
                             fontSize = 48.sp,
                             fontWeight = FontWeight.Bold,
-                            color = BrandPurple,
+                            color = MarketPurple,
                         )
                     }
                 }
@@ -148,7 +161,7 @@ fun ProductOverviewScreen(
                             .clip(CircleShape)
                             .background(CardWhite)
                             .border(1.dp, DividerGray, CircleShape)
-                            .clickable { MarketplaceStore.toggleFavourite(product.id) },
+                            .clickable { viewModel.toggleFavourite(product.id) },
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -235,8 +248,8 @@ fun ProductOverviewScreen(
                             .weight(1f)
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, BrandPurple),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandPurple),
+                        border = BorderStroke(1.dp, MarketPurple),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MarketPurple),
                     ) {
                         Text("Add to Cart", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
@@ -247,7 +260,7 @@ fun ProductOverviewScreen(
                             .weight(1f)
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                        colors = ButtonDefaults.buttonColors(containerColor = MarketPurple),
                     ) {
                         Text("Order Now", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }

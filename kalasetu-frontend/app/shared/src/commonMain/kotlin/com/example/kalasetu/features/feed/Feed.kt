@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -221,19 +222,30 @@ internal fun KalaTopBar(
     avatarBytes: ByteArray?,
     userName: String?,
     onProfileClick: () -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    title: String = "KalaSetu",
+    onBack: (() -> Unit)? = null,
 ) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "KalaSetu",
+                text = title,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             )
         },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            } else {
+                IconButton(onClick = onMenuClick) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                }
             }
         },
         actions = {
@@ -475,6 +487,7 @@ private fun PostCard(
                     icon = Icons.Default.Share,
                     label = "Share",
                     onClick = { /* Share logic */ }
+                )
                 var expanded by remember { mutableStateOf(false) }
                 Text(
                     buildAnnotatedString {

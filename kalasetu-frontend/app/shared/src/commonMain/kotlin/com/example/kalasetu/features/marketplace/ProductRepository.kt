@@ -1,27 +1,30 @@
 package com.example.kalasetu.features.marketplace
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+interface ProductRepository {
+    val products: List<Product>
+    fun productById(id: String): Product?
+    fun favouriteIds(): Set<String>
+    fun isFavourite(id: String): Boolean
+    fun toggleFavourite(id: String)
+}
 
-object MarketplaceStore {
-    private val _products = MutableStateFlow<List<Product>>(sampleProducts)
-    val products: StateFlow<List<Product>> = _products.asStateFlow()
+class LocalProductRepository : ProductRepository {
+    override val products: List<Product> = sampleProducts
 
-    private val _favouriteIds = MutableStateFlow<Set<String>>(emptySet())
-    val favouriteIds: StateFlow<Set<String>> = _favouriteIds.asStateFlow()
+    private val favourites = mutableSetOf<String>()
 
-    fun productById(id: String): Product? =
-        _products.value.firstOrNull { it.id == id }
+    override fun productById(id: String): Product? =
+        products.firstOrNull { it.id == id }
 
-    fun isFavourite(id: String): Boolean =
-        id in _favouriteIds.value
+    override fun favouriteIds(): Set<String> =
+        favourites.toSet()
 
-    fun toggleFavourite(id: String) {
-        _favouriteIds.value = if (id in _favouriteIds.value) {
-            _favouriteIds.value - id
-        } else {
-            _favouriteIds.value + id
+    override fun isFavourite(id: String): Boolean =
+        id in favourites
+
+    override fun toggleFavourite(id: String) {
+        if (!favourites.add(id)) {
+            favourites.remove(id)
         }
     }
 }

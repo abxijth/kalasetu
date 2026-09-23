@@ -8,6 +8,7 @@ data class Product(
     val category: String,
     val price: Double,
     val rating: Double,
+    val imageUrl: String? = null,
     val imageBytes: ByteArray? = null,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -23,6 +24,7 @@ data class Product(
         if (category != other.category) return false
         if (price != other.price) return false
         if (rating != other.rating) return false
+        if (imageUrl != other.imageUrl) return false
         if (imageBytes != null) {
             if (other.imageBytes == null) return false
             if (!imageBytes.contentEquals(other.imageBytes)) return false
@@ -38,6 +40,7 @@ data class Product(
         result = 31 * result + category.hashCode()
         result = 31 * result + price.hashCode()
         result = 31 * result + rating.hashCode()
+        result = 31 * result + (imageUrl?.hashCode() ?: 0)
         result = 31 * result + (imageBytes?.contentHashCode() ?: 0)
         return result
     }
