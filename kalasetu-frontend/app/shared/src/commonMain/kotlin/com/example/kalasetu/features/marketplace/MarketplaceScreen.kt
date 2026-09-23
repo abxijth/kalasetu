@@ -35,9 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,36 +46,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kalasetu.features.feed.KalaBottomNav
+import com.example.kalasetu.features.feed.KalaTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketplaceScreen(
+    viewModel: MarketplaceViewModel,
+    avatarUrl: String?,
+    avatarBytes: ByteArray?,
+    userName: String?,
     onProductClick: (String) -> Unit,
     onProfileClick: () -> Unit,
+    onMenuClick: () -> Unit,
+    onHomeClick: () -> Unit,
+    onEventsClick: () -> Unit,
+    onStoreClick: () -> Unit,
 ) {
-    val products by MarketplaceStore.products.collectAsState()
-    val favouriteIds by MarketplaceStore.favouriteIds.collectAsState()
-
-    var selectedCategory by remember { mutableStateOf(MarketplaceCategories.first()) }
-    var query by remember { mutableStateOf("") }
-
-    val filtered = remember(products, selectedCategory, query) {
-        products.filter { product ->
-            val matchesCategory =
-                selectedCategory == "All" || product.category == selectedCategory
-            val q = query.trim()
-            val matchesQuery =
-                q.isEmpty() ||
-                    product.name.contains(q, ignoreCase = true) ||
-                    product.sellerName.contains(q, ignoreCase = true) ||
-                    product.category.contains(q, ignoreCase = true)
-            matchesCategory && matchesQuery
-        }
-    }
+    val products by viewModel.filteredProducts.collectAsState()
+    val favouriteIds by viewModel.favouriteIds.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val query by viewModel.query.collectAsState()
 
     Scaffold(
         topBar = {
-            MarketplaceHeader(onProfileClick = onProfileClick)
+            KalaTopBar(
+                avatarUrl = avatarUrl,
+                avatarBytes = avatarBytes,
+                userName = userName,
+                onProfileClick = onProfileClick,
+                onMenuClick = onMenuClick,
+            )
+        },
+        bottomBar = {
+            KalaBottomNav(
+                selectedIndex = 2,
+                onStoreClick = onStoreClick,
+                onEventsClick = onEventsClick,
+                onHomeClick = onHomeClick,
+                onProfileClick = onProfileClick,
+            )
         },
         containerColor = CardWhite,
     ) { padding ->
@@ -109,13 +116,13 @@ fun MarketplaceScreen(
                 Spacer(Modifier.width(10.dp))
                 BasicTextField(
                     value = query,
-                    onValueChange = { query = it },
+                    onValueChange = viewModel::setQuery,
                     singleLine = true,
                     textStyle = TextStyle(
                         fontSize = 15.sp,
                         color = TextDark,
                     ),
-                    cursorBrush = SolidColor(BrandPurple),
+                    cursorBrush = SolidColor(MarketPurple),
                     modifier = Modifier.weight(1f),
                     decorationBox = { innerTextField ->
                         if (query.isEmpty()) {
@@ -140,7 +147,7 @@ fun MarketplaceScreen(
                     CategoryChip(
                         label = category,
                         isSelected = category == selectedCategory,
-                        onClick = { selectedCategory = category },
+                        onClick = { viewModel.setCategory(category) },
                     )
                 }
             }
@@ -148,7 +155,7 @@ fun MarketplaceScreen(
             Spacer(Modifier.height(12.dp))
 
             // product cards grid
-            if (filtered.isEmpty()) {
+            if (products.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -163,11 +170,11 @@ fun MarketplaceScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(filtered, key = { it.id }) { product ->
+                    items(products, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
                             isFavourite = product.id in favouriteIds,
-                            onFavouriteClick = { MarketplaceStore.toggleFavourite(product.id) },
+                            onFavouriteClick = { viewModel.toggleFavourite(product.id) },
                             onClick = { onProductClick(product.id) },
                         )
                     }
@@ -187,17 +194,17 @@ private fun CategoryChip(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
             .background(
-                if (isSelected) BrandPurple else LightPurpleBg,
+                if (isSelected) MarketPurple else LightPurpleBg,
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 8.dp),
     ) {
-Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) Color.White else TextDark,
-                )
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) Color.White else TextDark,
+        )
     }
 }
 
@@ -219,15 +226,16 @@ private fun ProductCard(
     ) {
         Column {
 
-            // ─── Product image (~60% of card, 17:20) ───
+            // ─── Product image (17:20) ───
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
             ) {
-                if (product.imageBytes != null) {
+                val imageModel = product.imageUrl ?: product.imageBytes
+                if (imageModel != null) {
                     coil3.compose.AsyncImage(
-                        model = product.imageBytes,
+                        model = imageModel,
                         contentDescription = product.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
@@ -243,7 +251,7 @@ private fun ProductCard(
                             text = product.name.take(2).uppercase(),
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Bold,
-                            color = BrandPurple,
+                            color = MarketPurple,
                         )
                     }
                 }
