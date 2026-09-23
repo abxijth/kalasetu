@@ -19,6 +19,7 @@ import com.example.kalasetu.features.opportunity.EditOpportunityScreen
 import com.example.kalasetu.features.marketplace.*
 import com.example.kalasetu.features.onboarding.*
 import com.example.kalasetu.features.profile.*
+import com.example.kalasetu.features.profile.BrandPurple
 import com.example.kalasetu.navigation.BackHandler
 import com.example.kalasetu.navigation.Screen
 import com.example.kalasetu.theme.KalasetuTheme
