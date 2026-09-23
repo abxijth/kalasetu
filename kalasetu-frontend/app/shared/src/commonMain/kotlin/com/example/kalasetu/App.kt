@@ -16,8 +16,10 @@ import com.example.kalasetu.features.application.*
 import com.example.kalasetu.features.event.*
 import com.example.kalasetu.features.opportunity.CreateOpportunityScreen
 import com.example.kalasetu.features.opportunity.EditOpportunityScreen
+import com.example.kalasetu.features.marketplace.*
 import com.example.kalasetu.features.onboarding.*
 import com.example.kalasetu.features.profile.*
+import com.example.kalasetu.features.profile.BrandPurple
 import com.example.kalasetu.navigation.BackHandler
 import com.example.kalasetu.navigation.Screen
 import com.example.kalasetu.theme.KalasetuTheme
@@ -41,7 +43,7 @@ fun App() {
     var currentProfile by remember { mutableStateOf<Profile?>(null) }
     var draftEvent by remember { mutableStateOf(EventDraft()) }
     var publishedPosts by remember { mutableStateOf<List<DraftPost>>(emptyList()) }
-    
+
     val sharedEventListViewModel: EventListViewModel = viewModel()
     val eventRepository = remember { EventRepository() }
     var onboardingData by remember { mutableStateOf(OnboardingData()) }
@@ -131,6 +133,18 @@ fun App() {
                         }
                     }
                 }
+
+                // ─── Marketplace (Audience) ───
+                Screen.Marketplace -> MarketplaceScreen(
+                    onProductClick = { productId -> screen = Screen.ProductOverview(productId) },
+                    onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
+                )
+
+                is Screen.ProductOverview -> ProductOverviewScreen(
+                    productId = currentScreen.productId,
+                    onBack = { screen = Screen.Marketplace },
+                    onProfileClick = { screen = Screen.Profile(userId = (AuthStore.userId ?: 123).toString()) },
+                )
 
                 Screen.OnboardingWelcome -> OnboardingWelcomeScreen {
                     screen = Screen.AuthSignup
@@ -231,7 +245,11 @@ fun App() {
                 Screen.OnboardingDone -> OnboardingDoneScreen(
                     onFinish = {
                         scope.launch {
-                            screen = Screen.Feed
+                            screen = when (selectedRole) {
+                                "Artist" -> Screen.ArtistHome(userId = "123")
+                                "Event Organizer" -> Screen.OrganizerHome(userId = "123")
+                                else -> Screen.Marketplace
+                            }
                             val response = onboardingRepository.onboardUser(
                                 name = userName.ifBlank { onboardingData.name },
                                 role = onboardingData.role,
